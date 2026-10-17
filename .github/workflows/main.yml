@@ -1,0 +1,30 @@
+name: Build Hyperion Shader jar
+on: workflow_dispatch
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Unzip source
+        run: unzip -q hyperion-shader-iris-fork.zip
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 25
+      - name: Build
+        shell: bash
+        working-directory: iris
+        run: |
+          chmod +x gradlew
+          ./gradlew :fabric:build --no-daemon --stacktrace 2>&1 | tee ../build.log
+      - name: Upload log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-log
+          path: build.log
+      - name: Upload jar
+        uses: actions/upload-artifact@v4
+        with:
+          name: hyperion-shader-jar
+          path: iris/build/libs/*.jar
